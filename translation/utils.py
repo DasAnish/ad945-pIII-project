@@ -4,10 +4,7 @@ from typing import ClassVar
 import torch
 from torch.autograd import Variable
 from datetime import datetime
-from tqdm.notebook import tnrange
 import numpy as np
-import os
-import torch.nn as nn
 Transformer = torch.nn.Transformer
 
 
@@ -45,85 +42,6 @@ class Log:
     def flush(self):
         self.file_object.close()
         self.file_object = open(self.filename, 'a+', encoding = 'utf-8')
-
-
-def move():
-    """The function that is used to construct the dataset"""
-    opt = Opt.get_instance()
-
-    def move_lang(lang):
-        inpFile1 = open(opt.pc_input_file + lang, 'r', encoding='utf-8')
-        inpFile2 = open(opt.nc_input_file + lang, 'r', encoding='utf-8')
-        intFile = open(opt.interim_file + lang, 'w', encoding='utf-8')
-
-        for _ in tnrange(int(opt.num_mil * 2 * 10**5)):
-            intFile.write(inpFile2.readline())
-        for _ in tnrange(int(opt.num_mil * 8 * 10**5)):
-            intFile.write(inpFile1.readline())
-
-        inpFile1.close()
-        inpFile2.close()
-        intFile.close()
-    move_lang(opt.src_lang)
-    move_lang(opt.trg_lang)
-
-
-def load_dev_dataset():
-    """The function which loads the dev dataset"""
-    opt = Opt.get_instance()
-    opt.dev_dataset = f'data/{opt.src_lang}/DEV-{opt.src_lang}-{opt.trg_lang}.'
-
-    with open(opt.dev_dataset + opt.src_lang, 'r', encoding='utf-8') as f:
-        opt.dev_src_sentences = f.read().split('\n')[:2000]
-    with open(opt.dev_dataset + opt.trg_lang, 'r', encoding='utf-8') as f:
-        opt.dev_trg_sentences = f.read().split('\n')[:2000]
-
-
-def load_model():
-    """The function used to load the model's parameters"""
-    opt = Opt.get_instance()
-
-    model = Transformer(*opt.args)
-    optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
-
-    starting_index = 0
-    for p in model.parameters():
-        if p.dim() > 1:
-            nn.init.xavier_uniform_(p)
-
-    # initializing the parameters of the model.
-
-    if not os.path.exists(opt.path):
-        if not os.path.exists(opt.path):
-            os.mkdir(opt.path)
-        opt.log.print(f"No {opt.path} found. Created a new path directory and started using xavier_uniform")
-    else:
-        for i in os.walk(opt.path):
-            break
-        i = i[2]
-        m = 0
-        mf = None
-        suffix_len = len('.model')
-        for file in i:
-            if opt.model_prefix not in file or '.model' not in file:
-                continue
-
-            num = int(file[len(opt.model_prefix):-suffix_len])
-            if num > m:
-                m = num
-                mf = file[:-suffix_len]
-
-        if mf is not None:
-            opt.log.print(f"Starting from last saved {mf}")
-            opt.save_model.load(f'{opt.path}/{mf}')
-            model.load_state_dict(opt.save_model.model_state_dict)
-            optim.load_state_dict(opt.save_model.optim_state_dict)
-            starting_index = m
-        else:
-            opt.log.print(f"Starting from xavier_uniform distribution")
-    opt.starting_index = starting_index
-
-    return model, optim
 
 
 def batch():
@@ -250,19 +168,16 @@ class Opt:
 
     eval_path: str = '/content/drive/MyDrive/Dissertation/eval/'
 
-
-
     model_dim: int = 512
     heads: int = 8
     N: int = 6
-    args = (vocab_size, vocab_size,
-                 model_dim, model_dim * 4,
-                 heads, N, max_len, 0.1, True)
 
     model: torch.nn.Module = None
     optim: torch.optim.Adam = None
 
-
+    @property
+    def args(self):
+        return None
 
     @property
     def pc_input_file(self):
