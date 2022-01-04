@@ -143,9 +143,11 @@ class Opt:
 
     # Enter the rest of the parameters here:
 
-    src_lang: str = ''
-    trg_lang: str = ''
+    # lang1: str = ''
+    # lang2: str = ''
 
+    lang1: str = ''
+    lang2: str = ''
     k: int = 10
     model_num: int = 1000 * 120
 
@@ -180,79 +182,48 @@ class Opt:
         return None
 
     @property
-    def pc_input_file(self):
-        # the paracrawl dataset path prefix
-        return f'../data/{self.src_lang}/ParaCrawl.{self.src_lang}-{self.trg_lang}.'
-
-
-    @property
-    def nc_input_file(self):
-        # the news commentary datset path prefix
-        return f'../data/{self.src_lang}/News-Commentary.{self.src_lang}-{self.trg_lang}.'
-
-
-    @property
     def model_file(self):
         # the sentence-piece model file prefix
-        return f'../data/{self.src_lang}/SPM-{self.num_mil}m-8k.{self.src_lang}-{self.trg_lang}.'
-
+        return f'../data/{self.lang1}-{self.lang2}/SPM-8k.{self.lang1}-{self.lang2}.'
 
     @property
     def interim_file(self):
         # the constructed dataset file
-        return f'../data/{self.src_lang}/{self.src_lang}-{self.trg_lang}.{self.num_mil}m.'
-
+        return f'../data/{self.lang1}-{self.lang2}/{self.lang1}-{self.lang2}.'
 
     @property
     def dataset(self):
         # the tokenized and binned dataset
-        return f'../data/{self.src_lang}/tokenized_dataset_{self.src_lang}_{self.num_mil}m'
-
+        return f'../data/{self.lang1}-{self.lang2}/tokenized_dataset_{self.lang1}'
 
     @property
     def dev_dataset(self):
         # the evaluation dataset used at regular intervals in the training
-        return f'../data/{self.src_lang}/DEV-{self.src_lang}-{self.trg_lang}.'
-
+        return f'../data/{self.lang1}-{self.lang2}/DEV-{self.lang1}-{self.lang2}.'
 
     @property
     def src_data_path(self):
-        return self.interim_file + self.src_lang
-
+        return self.interim_file + self.lang1
 
     @property
     def trg_data_path(self):
-        return self.interim_file + self.trg_lang
-
+        return self.interim_file + self.lang2
 
     @property
     def path(self):
-        return f'{self.data_path}/{self.src_lang}/{self.src_lang}-en-models'
-
+        return f'{self.data_path}/{self.lang1}/{self.lang1}-en-models'
 
     @property
     def model_prefix(self):
-        return f'{self.src_lang}-{self.trg_lang}-model-'
-
+        return f'{self.lang1}-{self.lang2}-model-'
 
     @property
     def translator_model_file(self):
         return self.model_prefix + str(self.model_num)
 
-
     @property
     def translated_path(self):
-        return f'{self.data_path}/{self.src_lang}/model-{self.model_num}-translated'
-
-
-    @property
-    def src_txt_path(self):
-        return f"{self.data_path}/{self.src_lang}/src_txt"
-
-
-    @property
-    def trg_txt_path(self):
-        return f"{self.data_path}/{self.src_lang}/trg_txt"
+        return f'{self.data_path}/{self.lang1}/model-{self.model_num}-translated'
 
     # End of parameters:
 
@@ -262,12 +233,12 @@ class Opt:
         else:
             Opt.__instance = self
 
-        if torch.cuda.is_available():
-            dev = 'cuda:0'
-        else:
-            dev = 'cpu'
+        # if torch.cuda.is_available():
+        #     dev = 'cuda:0'
+        # else:
+        #     dev = 'cpu'
 
-        self.device: torch.device = torch.device(dev)
+        self.device: torch.device = torch.device('cpu')
 
     @staticmethod
     def get_instance():

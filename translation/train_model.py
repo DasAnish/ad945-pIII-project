@@ -4,11 +4,11 @@ import torch.nn as nn
 import sacrebleu
 import numpy as np
 import time
-from utils import Opt, batch, create_masks
+from translation.utils import Opt, batch, create_masks
 from tqdm.notebook import tnrange
 import IPython
 import matplotlib.pyplot as plt
-from evaluate_model import evaluate
+# from evaluate_model import evaluate
 Tensor = torch.tensor
 
 
