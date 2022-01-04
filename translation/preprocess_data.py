@@ -22,19 +22,38 @@ def move():
         inpFile1.close()
         inpFile2.close()
         intFile.close()
-    move_lang(opt.src_lang)
-    move_lang(opt.trg_lang)
+    move_lang(opt.lang1)
+    move_lang(opt.lang2)
 
 
 def load_dev_dataset():
     """The function which loads the dev dataset"""
     opt = Opt.get_instance()
-    opt.dev_dataset = f'data/{opt.src_lang}/DEV-{opt.src_lang}-{opt.trg_lang}.'
+    opt.dev_dataset = f'data/{opt.lang1}/DEV-{opt.lang1}-{opt.lang2}.'
 
-    with open(opt.dev_dataset + opt.src_lang, 'r', encoding='utf-8') as f:
+    with open(opt.dev_dataset + opt.lang1, 'r', encoding='utf-8') as f:
         opt.dev_src_sentences = f.read().split('\n')[:2000]
-    with open(opt.dev_dataset + opt.trg_lang, 'r', encoding='utf-8') as f:
+    with open(opt.dev_dataset + opt.lang2, 'r', encoding='utf-8') as f:
         opt.dev_trg_sentences = f.read().split('\n')[:2000]
+
+
+def train_spm_model():
+    opt = Opt.get_instance()
+
+    trainingOption = (f"--input={opt.interim_file}{opt.lang1}"
+                      f"--model_prefix={opt.model_file}{opt.lang1}.model"
+                      f"--vocab_size=8000 --character_coverage=0.99"
+                      f"--model_type=bpe --pad_id=3 --bos_id=-1 --eos_id=-1")
+
+    spm.SentencePieceTrainer.train(trainingOption)
+
+    trainingOption = (f"--input={opt.interim_file}{opt.lang2}"
+                      f"--model_prefix={opt.model_file}{opt.lang2}.model"
+                      f"--vocab_size=8000 --character_coverage=0.99"
+                      f"--model_type=bpe --pad_id=3 --bos_id=-1 --eos_id=-1")
+
+    spm.SentencePieceTrainer.train(trainingOption)
+
 
 
 def create_models():
@@ -45,9 +64,9 @@ def create_models():
 
     print("initlizing sentence processors")
     opt.src_processor = spm.SentencePieceProcessor()
-    opt.src_processor.Init(model_file=f'{opt.model_file}{opt.src_lang}.model')
+    opt.src_processor.Init(model_file=f'{opt.model_file}{opt.lang1}.model')
     opt.trg_processor = spm.SentencePieceProcessor()
-    opt.trg_processor.Init(model_file=f'{opt.model_file}{opt.trg_lang}.model')
+    opt.trg_processor.Init(model_file=f'{opt.model_file}{opt.lang2}.model')
 
     opt.src_pad = opt.src_processor.pad_id()
     opt.trg_pad = opt.trg_processor.pad_id()

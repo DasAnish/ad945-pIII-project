@@ -12,4 +12,5 @@ if __name__ == '__main__':
     opt.lang1 = 'hi'
     opt.lang2 = 'mr'
 
-    print(opt.interim_file)
+    print(opt.model_file)
+
