@@ -145,6 +145,7 @@ class Opt:
 
     src_lang: str = ''
     trg_lang: str = ''
+    dir_name: str = ''
 
     k: int = 10
     model_num: int = 1000 * 120
@@ -175,84 +176,51 @@ class Opt:
     model: torch.nn.Module = None
     optim: torch.optim.Adam = None
 
-    @property
-    def args(self):
-        return None
-
-    @property
-    def pc_input_file(self):
-        # the paracrawl dataset path prefix
-        return f'../data/{self.src_lang}/ParaCrawl.{self.src_lang}-{self.trg_lang}.'
-
-
-    @property
-    def nc_input_file(self):
-        # the news commentary datset path prefix
-        return f'../data/{self.src_lang}/News-Commentary.{self.src_lang}-{self.trg_lang}.'
-
 
     @property
     def model_file(self):
         # the sentence-piece model file prefix
-        return f'../data/{self.src_lang}/SPM-{self.num_mil}m-8k.{self.src_lang}-{self.trg_lang}.'
+        return f'../data/{self.dir_name}/SPM-8k.{self.dir_name}.'
 
 
     @property
-    def interim_file(self):
+    def input_file(self):
         # the constructed dataset file
-        return f'../data/{self.src_lang}/{self.src_lang}-{self.trg_lang}.{self.num_mil}m.'
+        return f'../data/{self.src_lang}/{self.dir_name}.'
 
 
     @property
     def dataset(self):
         # the tokenized and binned dataset
-        return f'../data/{self.src_lang}/tokenized_dataset_{self.src_lang}_{self.num_mil}m'
+        return f'../data/{self.dir_name}/tokenized_dataset_{self.dir_name}'
 
 
     @property
     def dev_dataset(self):
         # the evaluation dataset used at regular intervals in the training
-        return f'../data/{self.src_lang}/DEV-{self.src_lang}-{self.trg_lang}.'
+        return f'../data/{self.dir_name}/DEV-{self.dir_name}.'
 
 
     @property
     def src_data_path(self):
-        return self.interim_file + self.src_lang
+        return self.input_file + self.src_lang
 
 
     @property
     def trg_data_path(self):
-        return self.interim_file + self.trg_lang
-
+        return self.input_file + self.trg_lang
 
     @property
     def path(self):
-        return f'{self.data_path}/{self.src_lang}/{self.src_lang}-en-models'
-
-
-    @property
-    def model_prefix(self):
-        return f'{self.src_lang}-{self.trg_lang}-model-'
-
+        return f"../data/{self.dir_name}/{self.src_lang}-{self.trg_lang}-models"
 
     @property
-    def translator_model_file(self):
-        return self.model_prefix + str(self.model_num)
-
-
-    @property
-    def translated_path(self):
-        return f'{self.data_path}/{self.src_lang}/model-{self.model_num}-translated'
-
+    def dev_src_path(self):
+        return f"../data/{self.dir_name}/dev-{self.src_lang}"
 
     @property
-    def src_txt_path(self):
-        return f"{self.data_path}/{self.src_lang}/src_txt"
-
-
-    @property
-    def trg_txt_path(self):
-        return f"{self.data_path}/{self.src_lang}/trg_txt"
+    def dev_trg_path(self):
+        return f"../data/{self.dir_name}/dev-{self.trg_lang}"
 
     # End of parameters:
 

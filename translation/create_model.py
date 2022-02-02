@@ -1,18 +1,25 @@
-from translation.utils import Opt
+from .utils import Opt
+from .TransformerLayers import Transformer
 
 import torch
 import torch.nn as nn
 
 import os
 
-Transformer = nn.Transformer
-
 
 def load_model():
     """The function used to load the model's parameters"""
     opt = Opt.get_instance()
 
-    model = Transformer(*opt.args)
+    model = Transformer(src_vocab_size=opt.vocab_size,
+                        trg_vocab_size=opt.vocab_size,
+                        model_dim=opt.model_dim,
+                        d_ff=opt.model_dim * 4,
+                        heads=opt.heads,
+                        num_blocks=opt.N,
+                        max_seq_len=opt.max_len,
+                        norm_before=True).to(opt.device)
+
     optim = torch.optim.Adam(model.parameters(), lr=0.0001, betas=(0.9, 0.98), eps=1e-9)
 
     starting_index = 0
@@ -21,7 +28,6 @@ def load_model():
             nn.init.xavier_uniform_(p)
 
     # initializing the parameters of the model.
-
     if not os.path.exists(opt.path):
         if not os.path.exists(opt.path):
             os.mkdir(opt.path)

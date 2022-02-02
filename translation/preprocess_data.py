@@ -37,6 +37,24 @@ def load_dev_dataset():
         opt.dev_trg_sentences = f.read().split('\n')[:2000]
 
 
+def train_spm_model():
+    opt = Opt.get_instance()
+
+    trainingOption = (f"--input={opt.input_file}{opt.src_lang} "
+                      f"--model_prefix={opt.model_file}{opt.src_lang} "
+                      f"--vocab_size=8000 --character_coverage=1.0 "
+                      f"--model_type=BPE --pad_id=3 --bos_id=-1 --eos_id=-1 ")
+
+    spm.SentencePieceTrainer.train(trainingOption)
+
+    trainingOption = (f"--input={opt.input_file}{opt.src_lang} "
+                      f"--model_prefix={opt.model_file}{opt.trg_lang} "
+                      f"--vocab_size=8000 --character_coverage=1.0 "
+                      f"--model_type=BPE --pad_id=3 --bos_id=-1 --eos_id=-1 ")
+
+    spm.SentencePieceTrainer.train(trainingOption)
+
+
 def create_models():
     """
     A function that loads the sentence piece model

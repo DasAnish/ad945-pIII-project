@@ -108,7 +108,6 @@ def translate_sentence(sentence, model):
     return multiple_replace({' ?': '?', ' !': '!', ' .': '.', '\' ': '\'', ' ,': ','}, sentence)
 
 
-
 def evaluate():
     """A function that evaluates the model using the dev set during the training step"""
     opt = Opt.get_instance()

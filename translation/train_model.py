@@ -22,7 +22,7 @@ def train_epoch():
     temp = time.time()
     total_loss = 0
 
-    tk1 = tnrange(opt.train_len)
+    tk1 = tqdm(range(opt.train_len))
     batch_gen = batch()
 
     last_loss = 0
@@ -43,13 +43,18 @@ def train_epoch():
             del src_tensor
             continue
 
-        src_mask, trg_mask = create_masks(src_tensor, trg_tensor)
-
-        preds = model(src_tensor, trg_tensor, src_mask, trg_mask)
+        src_mask, trg_mask, np_mask = create_masks(src_tensor, trg_tensor)
+        trg_mask = trg_mask & np_mask
+        preds = model(src_tensor,
+                      trg_tensor,
+                      src_mask,
+                      trg_mask)
+        # print("HERE")
         target = torch.LongTensor(trg_np[:, 1:]).to(opt.device).contiguous().view(-1)
         preds = preds.view(-1, preds.size(-1))
         loss = F.cross_entropy(preds, target, ignore_index=opt.trg_pad)
 
+        tk1.set_postfix({'loss': f'{loss.item():.6}'})
         loss.backward()
         total_loss += loss.item()
         opt.optim.step()
@@ -58,10 +63,10 @@ def train_epoch():
                                           min(opt.step ** (-0.5),
                                               opt.step * (opt.warmup_steps ** (-1.5)))
 
-        del src_mask, src_tensor, trg_mask, trg_tensor, preds, loss
+        # del src_mask, src_tensor, trg_mask, trg_tensor, preds, loss
         torch.cuda.empty_cache()
 
-        if (opt.step+1) % opt.print_every == 1:
+        if (opt.step+1) % opt.print_every == 0:
             IPython.display.clear_output(wait=True)
             diff = total_loss - last_loss
             diff = '%.3f' % diff
@@ -122,7 +127,6 @@ def train_model():
             l2 = losses[-6: -1]
             if sum(l1) - sum(l2) > 0.5:
                 break
-
 
 
 
