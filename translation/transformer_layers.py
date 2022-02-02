@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from typing import Optional, List
-from .SubLayers import PositionalEncoding, MultiHeadAttention, FeedForward
+from .sub_layers import PositionalEncoding, MultiHeadAttention, FeedForward
 Tensor = torch.Tensor
 
 

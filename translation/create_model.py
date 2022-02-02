@@ -1,5 +1,5 @@
 from .utils import Opt
-from .TransformerLayers import Transformer
+from .transformer_layers import Transformer
 
 import torch
 import torch.nn as nn

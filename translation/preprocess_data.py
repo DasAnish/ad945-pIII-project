@@ -14,46 +14,46 @@ def move():
         inpFile2 = open(opt.nc_input_file + lang, 'r', encoding='utf-8')
         intFile = open(opt.interim_file + lang, 'w', encoding='utf-8')
 
-        for _ in tnrange(int(opt.num_mil * 2 * 10**5)):
+        for _ in tnrange(int(opt.num_mil * 2 * 10 ** 5)):
             intFile.write(inpFile2.readline())
-        for _ in tnrange(int(opt.num_mil * 8 * 10**5)):
+        for _ in tnrange(int(opt.num_mil * 8 * 10 ** 5)):
             intFile.write(inpFile1.readline())
 
         inpFile1.close()
         inpFile2.close()
         intFile.close()
+
     move_lang(opt.src_lang)
     move_lang(opt.trg_lang)
 
 
-def load_dev_dataset():
-    """The function which loads the dev dataset"""
-    opt = Opt.get_instance()
-    opt.dev_dataset = f'data/{opt.src_lang}/DEV-{opt.src_lang}-{opt.trg_lang}.'
+# def load_dev_dataset():
+#     """The function which loads the dev dataset"""
+#     opt = Opt.get_instance()
+#     opt.dev_dataset = f'../data/{opt.dir_name}/DEV-{dir_name}.'
 
-    with open(opt.dev_dataset + opt.src_lang, 'r', encoding='utf-8') as f:
-        opt.dev_src_sentences = f.read().split('\n')[:2000]
-    with open(opt.dev_dataset + opt.trg_lang, 'r', encoding='utf-8') as f:
-        opt.dev_trg_sentences = f.read().split('\n')[:2000]
+#     with open(opt.dev_dataset + opt.src_lang, 'r', encoding='utf-8') as f:
+#         opt.dev_src_sentences = f.read().split('\n')[:2000]
+#     with open(opt.dev_dataset + opt.trg_lang, 'r', encoding='utf-8') as f:
+#         opt.dev_trg_sentences = f.read().split('\n')[:2000]
 
 
 def train_spm_model():
     opt = Opt.get_instance()
 
-    trainingOption = (f"--input={opt.interim_file}{opt.lang1}"
-                      f"--model_prefix={opt.model_file}{opt.lang1}.model"
-                      f"--vocab_size=8000 --character_coverage=0.99"
-                      f"--model_type=bpe --pad_id=3 --bos_id=-1 --eos_id=-1")
+    trainingOption = (f"--input={opt.input_file}{opt.src_lang} "
+                      f"--model_prefix={opt.model_file}{opt.src_lang} "
+                      f"--vocab_size=8000 --character_coverage=1.0 "
+                      f"--model_type=BPE --pad_id=3 --bos_id=-1 --eos_id=-1 ")
 
     spm.SentencePieceTrainer.train(trainingOption)
 
-    trainingOption = (f"--input={opt.interim_file}{opt.lang2}"
-                      f"--model_prefix={opt.model_file}{opt.lang2}.model"
-                      f"--vocab_size=8000 --character_coverage=0.99"
-                      f"--model_type=bpe --pad_id=3 --bos_id=-1 --eos_id=-1")
+    trainingOption = (f"--input={opt.input_file}{opt.trg_lang} "
+                      f"--model_prefix={opt.model_file}{opt.trg_lang} "
+                      f"--vocab_size=8000 --character_coverage=1.0 "
+                      f"--model_type=BPE --pad_id=3 --bos_id=1 --eos_id=2 ")
 
     spm.SentencePieceTrainer.train(trainingOption)
-
 
 
 def create_models():
@@ -70,6 +70,7 @@ def create_models():
 
     opt.src_pad = opt.src_processor.pad_id()
     opt.trg_pad = opt.trg_processor.pad_id()
+
     opt.trg_bos = opt.trg_processor.bos_id()
     opt.trg_eos = opt.trg_processor.eos_id()
 
@@ -89,6 +90,11 @@ def create_dataset():
             opt.src_bins = pickle.load(f)
             opt.trg_bins = pickle.load(f)
 
+        with open(opt.src_dev_path, 'r', encoding='utf-8') as f:
+            opt.dev_src_senteces = f.read().split('\n')
+        with open(opt.trg_dev_path, 'r', encoding='utf-8') as f:
+            opt.dev_trg_sentences = f.read().split('\n')
+
         print({s: len(opt.src_bins[s]) for s in opt.bins})
         return
 
@@ -97,6 +103,17 @@ def create_dataset():
         opt.src_data = f.read().split('\n')
     with open(opt.trg_data_path, 'r', encoding='utf-8') as f:
         opt.trg_data = f.read().split('\n')
+
+    opt.dev_src_senteces = opt.src_data[:2000]
+    opt.src_data = opt.src_data[2000:]
+
+    opt.dev_trg_sentences = opt.trg_data[:2000]
+    opt.trg_data = opt.trg_data[2000:]
+
+    with open(opt.src_dev_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(opt.dev_src_senteces))
+    with open(opt.trg_dev_path, 'w', encoding='utf-8') as f:
+        f.write('\n'.join(opt.dev_trg_sentences))
 
     opt.src_bins = {i: [] for i in opt.bins}
     opt.trg_bins = {i: [] for i in opt.bins}
